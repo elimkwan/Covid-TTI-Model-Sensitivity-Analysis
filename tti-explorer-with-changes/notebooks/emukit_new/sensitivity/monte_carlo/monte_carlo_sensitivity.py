@@ -162,7 +162,6 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
         :param num_monte_carlo_points: number of samples to generate
         """
         self.main_sample = self.input_domain.sample_uniform(num_monte_carlo_points)
-        self.main_sample2 = self.input_domain.sample_uniform(num_monte_carlo_points)
         self.fixing_sample = self.input_domain.sample_uniform(num_monte_carlo_points)
 
     def saltelli_estimators(self,
@@ -180,7 +179,7 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
         return variable_main_variance, variable_total_variance
 
     def saltelli_estimators_second(self,
-                            f_main_sample: np.ndarray, f_main_sample2: np.ndarray, f_fixing_sample: np.ndarray,
+                            f_main_sample: np.ndarray, f_fixing_sample: np.ndarray,
                             f_new_fixing_sample: np.ndarray, num_monte_carlo_points: int,
                             total_mean: np.float64, total_variance: np.float64,
                             first_order_sobol_of_pair0: np.float64, first_order_sobol_of_pair1: np.float64) -> Tuple:
@@ -188,25 +187,23 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
         Saltelli estimators of the total mean and variance
         """
 
-        variable_second_variance = sum(f_main_sample * f_main_sample2 * f_new_fixing_sample) / (num_monte_carlo_points - 1) - first_order_sobol_of_pair0 - first_order_sobol_of_pair1 - total_mean**2
+        variable_second_variance = sum(f_main_sample * f_new_fixing_sample) / (num_monte_carlo_points - 1) - first_order_sobol_of_pair0 - first_order_sobol_of_pair1 - total_mean**2
 
         return variable_second_variance
 
     def compute_effects(self,
-                        main_sample: np.ndarray=None, main_sample2: np.ndarray=None, fixing_sample: np.ndarray=None,
+                        main_sample: np.ndarray=None, fixing_sample: np.ndarray=None,
                         num_monte_carlo_points: int=int(1e5)) -> Tuple:
 
-        if main_sample is None or main_sample2 is None or fixing_sample is None:
+        if main_sample is None or fixing_sample is None:
             self.num_monte_carlo_points = num_monte_carlo_points
             self._generate_samples(self.num_monte_carlo_points)
         else:
             self.main_sample = main_sample
-            self.main_sample2 = main_sample2
             self.fixing_sample = fixing_sample
             self.num_monte_carlo_points = self.main_sample.shape[0]
 
         f_main_sample = self.objective.f(self.main_sample)
-        f_main_sample2 = self.objective.f(self.main_sample2)
         f_fixing_sample = self.objective.f(self.fixing_sample)
 
         total_mean, total_variance = self.compute_statistics(f_main_sample)
@@ -242,7 +239,7 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
             # --- All columns are the same but two are replaced by the original sample
             self.new_fixing_sample = self.fixing_sample.copy()
             self.new_fixing_sample[:, pair[0]] = self.main_sample[:, pair[0]]
-            self.new_fixing_sample[:, pair[1]] = self.main_sample2[:, pair[1]]
+            self.new_fixing_sample[:, pair[1]] = self.main_sample[:, pair[1]]
 
             # --- Evaluate the objective at the new fixing sample
             f_new_fixing_sample = self.objective.f(self.new_fixing_sample)
@@ -253,7 +250,7 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
             # --- Compute the second order Sobol indices
             variable_secondary_variance = \
                 self.saltelli_estimators_second(
-                    f_main_sample, f_main_sample2, f_fixing_sample,
+                    f_main_sample, f_fixing_sample,
                     f_new_fixing_sample, self.num_monte_carlo_points,
                     total_mean, total_variance,
                     first_order_sobol_of_pair0, first_order_sobol_of_pair1
@@ -263,6 +260,10 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
             pair_names = variable_names[pair[0]] + '+' + variable_names[pair[1]]
             secondary_effect[pair_names] = variable_secondary_variance / total_variance
 
-        # return f_main_sample, f_main_sample2, f_fixing_sample, f_new_fixing_sample
+            # f_main = f_main_sample.shape
+            # f_new_fix = f_new_fixing_sample.shape
+            # s = self.new_fixing_sample.shape
+
         return main_effects, secondary_effect, total_effects, total_variance
+        # return main_effects, f_main, f_new_fix, s
 
