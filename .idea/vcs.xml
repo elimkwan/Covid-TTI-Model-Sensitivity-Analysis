@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tti-explorer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tti-explorer-with-changes/notebooks/tti-explorer" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tti-explorer/notebooks/tti-explorer" vcs="Git" />
   </component>
 </project>
