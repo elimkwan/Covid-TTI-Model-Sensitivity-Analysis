@@ -143,6 +143,14 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
     Class to compute the sensitivity coefficients of given model. This class wraps the model and calls the mean
     predictions that are used to compute the sensitivity inputs using Monte Carlo.
     """
+    # def __init__(self, objective: Callable, input_domain: ParameterSpace) -> None:
+    #     """
+    #     :param objective: python function in which the sensitivity analysis will be performed.
+    #     :param input_domain: parameter space.
+    #     """
+    #     self.objective = UserFunctionWrapper(objective)
+    #     self.input_domain = input_domain
+    #     self.main_sample_aggr = []
 
     def __init__(self, model: IModel, input_domain: ParameterSpace)-> None:
         """
@@ -152,6 +160,7 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
 
         self.model = model
         self.model_objective = lambda x: self.model.predict(x)[0]
+        self.main_sample_aggr = []
 
         super().__init__(self.model_objective, input_domain)
 
@@ -214,6 +223,8 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
         total_effects = {}
         var_index = 0
 
+        self.main_sample_aggr.append(self.main_sample)
+
         for variable in variable_names:
             # --- All columns are the same but the one of interest that is replaced by the original sample
             self.new_fixing_sample = self.fixing_sample.copy()
@@ -221,6 +232,9 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
 
             # --- Evaluate the objective at the new fixing sample
             f_new_fixing_sample = self.objective.f(self.new_fixing_sample)
+
+            # if var_index == 0:
+            #     self.main_sample_aggr.append(f_new_fixing_sample)
 
             # --- Compute the main and total variances
             variable_main_variance, variable_total_variance = \
@@ -257,13 +271,10 @@ class MonteCarloSecondOrderSensitivity(ModelFreeMonteCarloSensitivity):
                 )
 
             # --- Compute the effects
-            pair_names = variable_names[pair[0]] + '+' + variable_names[pair[1]]
+            pair_names = variable_names[pair[0]] + '+ \n' + variable_names[pair[1]]
             secondary_effect[pair_names] = variable_secondary_variance / total_variance
 
-            # f_main = f_main_sample.shape
-            # f_new_fix = f_new_fixing_sample.shape
-            # s = self.new_fixing_sample.shape
 
         return main_effects, secondary_effect, total_effects, total_variance
-        # return main_effects, f_main, f_new_fix, s
+        # return self.main_sample_aggr, 100,0,0
 
