@@ -115,7 +115,7 @@ v1 = [0.00, .99]
 v2 = [0.05,.99]
 v3 = [0.05, .99]
 v4 = [0.05, .99]
-v5 = [0.05, .99]
+v5 = [0.05, .75]
 v6 = [0.05, .7]
 
 
@@ -203,7 +203,7 @@ def run_sensitivity(strigency, initial_samples, bo_samples, mc_samples, col):
 
 
 s_levels=['S1_symptom_based_TTI','S2_symptom_based_TTI','S3_symptom_based_TTI','S4_symptom_based_TTI','S5_symptom_based_TTI',]
-s_levels=['S5_symptom_based_TTI',]
+#s_levels=['S5_symptom_based_TTI',]
 
 over18 = load_csv(os.path.join(path_to_bbc_data, "contact_distributions_o18.csv"))
 under18 = load_csv(os.path.join(path_to_bbc_data, "contact_distributions_u18.csv"))
@@ -213,7 +213,7 @@ cols = ['red', 'tomato', 'orange', 'deepskyblue', 'green']
 
 
 def optimise_it(strig):
-    kern_eq = GPy.kern.RBF(input_dim=6, ARD = True)
+    kern_eq = GPy.kern.RBF(input_dim=6, ARD = True) + GPy.kern.White(input_dim=6, variance=1)
     kern_bias = GPy.kern.Bias(input_dim=6)
     kern = kern_eq + kern_bias
     domain = [
@@ -238,6 +238,6 @@ for strigency in s_levels:
 
     tti_model = TTIFlowModel(rng, **strategy_config)
 
-    run_sensitivity(strigency, 100, 0, 10000, cols[cidx])
-#    optimise_it(strigency)
+#    run_sensitivity(strigency, 20, 20, 10000, cols[cidx])
+    optimise_it(strigency)
     cidx+=1

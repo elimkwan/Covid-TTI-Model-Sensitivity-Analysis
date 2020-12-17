@@ -149,7 +149,7 @@ cols = ['red', 'tomato', 'orange', 'deepskyblue', 'green']
 
 
 def optimise_it(strig):
-    kern_eq = GPy.kern.RBF(input_dim=2, ARD = True)
+    kern_eq = GPy.kern.RBF(input_dim=2, ARD = True) + GPy.kern.White(input_dim=2, variance=1)
     kern_bias = GPy.kern.Bias(input_dim=2)
     kern = kern_eq + kern_bias
     domain = [
