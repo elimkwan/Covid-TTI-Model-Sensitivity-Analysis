@@ -6,5 +6,5 @@ Our demonstrations and plots can be found in `./tti-explorer-with-changes/notebo
 - Bayesian-Optimisation-Exp
 - Real-World-Exp
 
-The modified Emukit Library which can be used to compute second order Sobol indices for 3 variable case can be found in `./tti-explorer-with-changes/notebooks/Second-Order-Library-and-Exp/emukit_new/sensitivity/monte_carlo`
+The modified Emukit Library for second order Sobol indices computation can be found in `./tti-explorer-with-changes/notebooks/Second-Order-Library-and-Exp/emukit_new/sensitivity/monte_carlo`
 with demo in `Second-Order-Library-and-Exp/Higher-order-SA-on-CaseConfig.ipynb`
